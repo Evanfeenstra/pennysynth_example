@@ -6,9 +6,11 @@
  Tim Barrass 2012-13, CC by-nc-sa.
  
  Circuit on a Teensy3.2:
-   Photocell from pin 14 to +5V
+   Photocell from pin 14 to +5V (Pitch)
    10k resistor from pin 14 to ground
-   Potentiometer on pin 15 to select waveforms
+   Photocell from pin 15 to +5V (LFO speed)
+   10k resistor from pin 15 to ground
+   Potentiometer on pin 21 to select waveforms
    
  For 44.1 Khz, 16 bit audio use Teensy 3, and install http://github.com/pedvide/ADC
 */
@@ -33,7 +35,7 @@ LowPassFilter lpf;  //Low Pass filter
 void setup(
  kLFO.setFreq(2.63f);
  lpf.setResonance(100);  //LPF
- pinMode(0, INPUT_PULLUP);
+ pinMode(0, INPUT_PULLUP); //switch
 ){}
 
 //array of semitone intervals in an octave
@@ -41,6 +43,7 @@ void setup(
 int semi[6]={
   0,2,4,5,7,9};
 int note;
+int mode;
 
 void updateControl(){
 
@@ -67,8 +70,8 @@ void updateControl(){
      int light1=mozziAnalogRead(1); //photocell on analog pin 1
      float lfo_speed=(light1)/100;
      kLFO.setFreq(lfo_speed);
-     if (digitalRead(0)==0) {
-       float lfo_amount=(mozziAnalogRead(1)/100+1);
+     if (digitalRead(0)==0) {//switch on digital pin 0
+       float lfo_amount=(knob1/10);
        byte cutoff_freq = kLFO.next(); // the lfo waveform mods the filter cutoff
        lpf.setCutoffFreq(cutoff_freq/lfo_amount); //and the frequency modded by light1
    
@@ -83,8 +86,8 @@ void updateControl(){
        lpf.setCutoffFreq(knob1/10);
      }
     
-    //change the oscillator waveform with knob on analog pin 1
-    mode = map(mozziAnalogRead(0), 0, 1023, 0, 3); // automatically map an input value to an output range
+    //change the oscillator waveform with knob on analog pin 7
+    mode = map(mozziAnalogRead(7), 0, 1023, 0, 3); // input value to output range
     if (mode == 0) {
       aOsc.setTable(SIN512_DATA);
     }
