@@ -87,7 +87,7 @@ void updateControl(){
        lpf.setCutoffFreq(knob1/10);
      }
     
-    //change the oscillator waveform with knob on analog pin 7
+    //change the oscillator waveform with knob on analog pin 8
     mode = map(mozziAnalogRead(8), 0, 1023, 0, 3); // input value to output range
     if (mode == 0) {
       aOsc.setTable(SIN512_DATA);
