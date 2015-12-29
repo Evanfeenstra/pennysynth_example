@@ -1,5 +1,5 @@
 /*
- Auto-harmonizing theramin
+ Auto-harmonizing LFO theramin
  by Evan Feenstra
  
  using Mozzi sonification library by
@@ -10,7 +10,8 @@
    10k resistor from pin 14 to ground
    Photocell from pin 15 to +5V (LFO speed)
    10k resistor from pin 15 to ground
-   Potentiometer on pin 21 to select waveforms
+   Potentiometer on pin 21 (LFO depth)
+   Potentiometer on pin 22 (Oscillator waveform)
    
  For 44.1 Khz, 16 bit audio use Teensy 3, and install http://github.com/pedvide/ADC
 */
@@ -87,7 +88,7 @@ void updateControl(){
      }
     
     //change the oscillator waveform with knob on analog pin 7
-    mode = map(mozziAnalogRead(7), 0, 1023, 0, 3); // input value to output range
+    mode = map(mozziAnalogRead(8), 0, 1023, 0, 3); // input value to output range
     if (mode == 0) {
       aOsc.setTable(SIN512_DATA);
     }
