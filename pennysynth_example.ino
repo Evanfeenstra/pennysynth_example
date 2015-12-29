@@ -22,24 +22,30 @@
 #include <tables/triangle512_int8.h>
 #include <tables/square_analogue512_int8.h>
 #include <mozzi_midi.h> // for mtof
+#include <LowPassFilter.h>
 
 #define CONTROL_RATE 128 // powers of 2 please
 Oscil<512, AUDIO_RATE> aOsc; // main oscillator
 Oscil <512, AUDIO_RATE> aSin(SIN512_DATA); //Harmony oscillator
+Oscil <512, CONTROL_RATE> kLFO(TRIANGLE512_DATA); //LFO waveform
+LowPassFilter lpf;  //Low Pass filter
 
-void setup(){}
+void setup(
+ kLFO.setFreq(2.63f);
+ lpf.setResonance(100);  //LPF
+ pinMode(0, INPUT_PULLUP);
+){}
 
 //array of semitone intervals in an octave
 //discluding the leading tone
 int semi[6]={
   0,2,4,5,7,9};
 int note;
-int light;
 
 void updateControl(){
 
   //Theramin
-    light=mozziAnalogRead(0); //photocell on analog pin 0
+    int light=mozziAnalogRead(0); //photocell on analog pin 0
     note=map(light,0,1000,20,150);
     for (int j=0; j<8; j++) {  // 8 octaves
       for (int i=0; i<6; i++) { // 6 notes in each octave
@@ -55,6 +61,27 @@ void updateControl(){
         }
       }
     } 
+    
+    // FILTER and LFO
+     int knob1 = mozziAnalogRead(7); // knob on analog pin 7
+     int light1=mozziAnalogRead(1); //photocell on analog pin 1
+     float lfo_speed=(light1)/100;
+     kLFO.setFreq(lfo_speed);
+     if (digitalRead(0)==0) {
+       float lfo_amount=(mozziAnalogRead(1)/100+1);
+       byte cutoff_freq = kLFO.next(); // the lfo waveform mods the filter cutoff
+       lpf.setCutoffFreq(cutoff_freq/lfo_amount); //and the frequency modded by light1
+   
+       if (cutoff_freq>63) { 
+         digitalWrite(2, HIGH); 
+       }  // set the LED on pin 2 on
+       if (cutoff_freq<64) { 
+         digitalWrite(2, LOW); 
+       }
+     }
+     else {
+       lpf.setCutoffFreq(knob1/10);
+     }
     
     //change the oscillator waveform with knob on analog pin 1
     mode = map(mozziAnalogRead(0), 0, 1023, 0, 3); // automatically map an input value to an output range
@@ -75,7 +102,7 @@ void updateControl(){
 
 int updateAudio(){
   //add together the oscillators
-  return (aOsc.next() + aSin.next());
+  return (int)lpf.next(aOsc.next() + aSin.next());
 }
 
 void loop(){
