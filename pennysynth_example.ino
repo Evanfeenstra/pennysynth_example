@@ -36,7 +36,6 @@ LowPassFilter lpf;  //Low Pass filter
 void setup(
  kLFO.setFreq(2.63f);
  lpf.setResonance(100);  //LPF
- pinMode(0, INPUT_PULLUP); //switch
 ){}
 
 //array of semitone intervals in an octave
